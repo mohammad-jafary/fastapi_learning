@@ -2,6 +2,7 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Path, Query
 from pydantic import BaseModel, Field
+from starlette import status
 
 app = FastAPI()
 
@@ -53,12 +54,12 @@ BOOKS = [
 ]
 
 
-@app.get("/books")
+@app.get("/books", status_code=status.HTTP_200_OK)
 async def read_all_books():
     return BOOKS
 
 
-@app.get("/books/publish/")
+@app.get("/books/publish/", status_code=status.HTTP_200_OK)
 async def read_book_by_publish_date(publish_date: int = Query(gt=1800, lt=2025)):
     books_to_return = []
     for book in BOOKS:
@@ -67,7 +68,7 @@ async def read_book_by_publish_date(publish_date: int = Query(gt=1800, lt=2025))
     return books_to_return
 
 
-@app.get("/books/{book_id}")
+@app.get("/books/{book_id}", status_code=status.HTTP_200_OK)
 async def read_book(book_id: int = Path(gt=0)):
     for book in BOOKS:
         if book.id == book_id:
@@ -78,7 +79,7 @@ async def read_book(book_id: int = Path(gt=0)):
     )
 
 
-@app.get("/books/")
+@app.get("/books/", status_code=status.HTTP_200_OK)
 async def read_book_by_rating(book_rating: int = Query(gt=-1, lt=6)):
     books_to_return = []
     for book in BOOKS:
@@ -87,14 +88,14 @@ async def read_book_by_rating(book_rating: int = Query(gt=-1, lt=6)):
     return books_to_return
 
 
-@app.post("/create-book")
+@app.post("/create-book", status_code=status.HTTP_201_CREATED)
 async def create_book(book_request: BookRequest):
     new_book = Book(**book_request.model_dump())
     BOOKS.append(find_book_id(new_book))
     return {"message": f"Book added successfully with id of {BOOKS[-1].id}"}
 
 
-@app.put("/books/update_book")
+@app.put("/books/update_book", status_code=status.HTTP_204_NO_CONTENT)
 async def update_book(book: BookRequest):
     book_updated = False
     book_to_update = Book(**book.model_dump())
@@ -109,7 +110,7 @@ async def update_book(book: BookRequest):
         )
 
 
-@app.delete("/books/{book_id}")
+@app.delete("/books/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_book(book_id: int = Path(gt=0)):
     book_removed = False
     for i in range(len(BOOKS)):
